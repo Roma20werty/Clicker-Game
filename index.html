@@ -1,1 +1,172 @@
-index.html
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clicker RPG Ultra</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    text-align:center;
+    background: linear-gradient(135deg,#000428,#004e92);
+    color:white;
+}
+h1{margin:10px;}
+#avatar{font-size:64px;margin:5px;}
+#score{font-size:36px;margin:5px;}
+#tap{
+    width:220px;height:220px;border-radius:50%;
+    background:#00ffe1;border:none;font-size:26px;
+    box-shadow:0 0 25px #00ffe1;
+    transition:.1s;
+}
+#tap:active{transform:scale(0.92);}
+button,select,input{
+    margin:5px;padding:8px;border-radius:8px;border:none;font-size:16px;
+}
+#custom,#inventory,#battle,#accounts{
+    background:#001f40;border-radius:12px;margin:10px;padding:10px;
+}
+#items{max-height:120px;overflow:auto;text-align:left;padding:5px;}
+</style>
+</head>
+<body>
+
+<h1>🎮 Clicker RPG Ultra</h1>
+
+<div id="accounts">
+<h3>Акаунт</h3>
+<input type="text" id="nameInput" placeholder="Введіть ім'я">
+<select id="avatarSelect" onchange="changeAvatar(this.value)">
+<option value="🧑">🧑</option>
+<option value="😺">😺</option>
+<option value="👾">👾</option>
+<option value="🤖">🤖</option>
+<option value="🦊">🦊</option>
+</select>
+<button onclick="createAccount()">Створити</button>
+<div>Ваш аватар: <span id="avatar">🧑</span></div>
+</div>
+
+<div id="score">0</div>
+<button id="tap">ТИСНИ!</button>
+
+<div id="custom">
+<h3>Кастомізація кнопки</h3>
+Колір: <select onchange="tapColor(this.value)">
+<option value="#00ffe1">Бирюзова</option>
+<option value="#ff0080">Рожева</option>
+<option value="#ffaa00">Помаранчева</option>
+<option value="#00ff00">Зелена</option>
+</select>
+Розмір: <select onchange="tapSize(this.value)">
+<option value="200">Маленька</option>
+<option value="240" selected>Звичайна</option>
+<option value="300">Велика</option>
+</select>
+</div>
+
+<div id="inventory">
+<h3>Інвентар</h3>
+<button onclick="addItem('Зілля')">Отримати Зілля</button>
+<button onclick="addItem('Меч')">Отримати Меч</button>
+<div id="items"></div>
+</div>
+
+<div id="battle">
+<h3>Битви</h3>
+<input type="text" id="friendCode" placeholder="Код друга">
+<button onclick="startBattle()">Почати батл</button>
+<div id="battleLog"></div>
+</div>
+
+<script>
+// ---------- Збереження акаунта ----------
+let save = JSON.parse(localStorage.getItem("rpgSave")) || {
+name:"",
+avatar:"🧑",
+score:0,
+power:1,
+inventory:[],
+friends:{}
+};
+
+const scoreBox = document.getElementById("score");
+const tapBtn = document.getElementById("tap");
+const avatarSpan = document.getElementById("avatar");
+const itemsDiv = document.getElementById("items");
+const battleLog = document.getElementById("battleLog");
+
+scoreBox.innerText = save.score;
+avatarSpan.innerText = save.avatar;
+
+// ---------- Створення акаунта ----------
+function createAccount(){
+const name = document.getElementById("nameInput").value;
+if(!name){alert("Введіть ім'я!"); return;}
+save.name = name;
+save.avatar = document.getElementById("avatarSelect").value;
+store();
+updateUI();
+}
+
+// ---------- Кнопка клік ----------
+tapBtn.onclick = ()=>{
+save.score += save.power;
+store();
+updateUI();
+};
+
+// ---------- Кастомізація кнопки ----------
+function tapColor(c){tapBtn.style.background=c;}
+function tapSize(s){tapBtn.style.width=s+"px";tapBtn.style.height=s+"px";}
+
+// ---------- Аватар ----------
+function changeAvatar(a){
+avatarSpan.innerText=a;
+save.avatar = a;
+store();
+}
+
+// ---------- Інвентар ----------
+function addItem(item){
+save.inventory.push(item);
+store();
+renderItems();
+}
+
+function renderItems(){
+itemsDiv.innerHTML="";
+save.inventory.forEach((it,i)=>{
+let d=document.createElement("div");
+d.innerText = (i+1)+". "+it;
+itemsDiv.appendChild(d);
+});
+}
+
+// ---------- Батли ----------
+function startBattle(){
+const code = document.getElementById("friendCode").value;
+if(!code){alert("Введіть код друга!"); return;}
+let friendPower = Math.floor(Math.random()*10)+1; // умовний суперник
+let result="";
+if(save.power>=friendPower) result="Виграш!";
+else result="Програш!";
+battleLog.innerText=`Батл з кодом ${code}\nТвоя сила: ${save.power}\nСила друга: ${friendPower}\nРезультат: ${result}`;
+}
+
+// ---------- Збереження ----------
+function store(){localStorage.setItem("rpgSave",JSON.stringify(save));}
+
+// ---------- Оновлення UI ----------
+function updateUI(){
+scoreBox.innerText = save.score;
+avatarSpan.innerText = save.avatar;
+renderItems();
+}
+
+updateUI();
+</script>
+</body>
+</html>
